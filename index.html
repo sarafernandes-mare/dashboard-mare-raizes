@@ -1,0 +1,106 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maré Educação — Dashboard Financeiro Raízes</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+body{background:#0f172a;color:#e2e8f0;padding:24px}.wrap{max-width:1400px;margin:0 auto}
+header{background:linear-gradient(135deg,#1e3a8a,#0ea5e9);border-radius:18px;padding:32px 36px;margin-bottom:24px;box-shadow:0 10px 30px rgba(14,165,233,.25)}
+header h1{font-size:28px;color:#fff;margin-bottom:6px}header p{color:#bae6fd;font-size:14px}
+.grid{display:grid;gap:18px}.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:24px}
+.kpi{background:#1e293b;border-radius:14px;padding:22px;border-left:4px solid #38bdf8}
+.kpi .label{font-size:12px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.kpi .val{font-size:26px;font-weight:700;color:#f8fafc}.kpi .sub{font-size:12px;color:#64748b;margin-top:4px}
+.kpi.green{border-color:#22c55e}.kpi.amber{border-color:#f59e0b}.kpi.red{border-color:#ef4444}.kpi.violet{border-color:#a78bfa}
+.cards{grid-template-columns:repeat(12,1fr)}.card{background:#1e293b;border-radius:16px;padding:24px}
+.card h2{font-size:16px;color:#f1f5f9;margin-bottom:4px}.card .desc{font-size:12px;color:#94a3b8;margin-bottom:18px}
+.col-12{grid-column:span 12}.col-8{grid-column:span 8}.col-7{grid-column:span 7}.col-6{grid-column:span 6}.col-5{grid-column:span 5}.col-4{grid-column:span 4}
+@media(max-width:1000px){.col-8,.col-7,.col-6,.col-5,.col-4{grid-column:span 12}}
+canvas{max-height:340px}table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid #334155}th{color:#94a3b8;font-size:11px;text-transform:uppercase}
+td{color:#cbd5e1}tr:hover td{background:#0f172a}.num{font-variant-numeric:tabular-nums;font-weight:600}
+.tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.t-hi{background:#7f1d1d;color:#fecaca}.t-md{background:#78350f;color:#fde68a}.t-lo{background:#14532d;color:#bbf7d0}
+.foot{text-align:center;color:#64748b;font-size:12px;margin-top:30px;padding:18px}
+.filterbar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:#0f172a;border:1px solid #334155;border-radius:12px;padding:14px 18px}
+.filterbar label{font-size:12px;color:#94a3b8;text-transform:uppercase;margin-right:6px}
+.filterbar select{background:#1e293b;color:#e2e8f0;border:1px solid #475569;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer}
+.filterbar button{background:#334155;color:#cbd5e1;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer}
+.filterbar button:hover{background:#475569;color:#fff}.rangepill{margin-left:auto;display:flex;gap:18px;flex-wrap:wrap}
+.rangepill div{font-size:12px;color:#94a3b8}.rangepill b{display:block;font-size:18px;color:#f8fafc;font-variant-numeric:tabular-nums}
+.rangepill .g{color:#a78bfa}.rangepill .o{color:#38bdf8}
+.bdg{background:#1e3a8a;color:#bae6fd;padding:2px 8px;border-radius:10px;font-size:11px;vertical-align:middle}
+</style></head><body><div class="wrap">
+<header><h1>📊 Maré Educação — Dashboard Financeiro Raízes</h1>
+<p>Produtos: Raízes + Raízes - R · Dados até 23/06/2026 · Valores líquidos · Gerado automaticamente</p></header>
+<div class="grid kpis" id="kpis"></div>
+<div class="card col-12" style="margin-bottom:6px">
+<div style="font-size:12px;color:#94a3b8;margin-bottom:10px">🔎 <b style="color:#cbd5e1">Filtro de período</b> — afeta só os gráficos com <span class="bdg">filtrável</span> (Projeção e Acumulado, mensais futuros). Os demais são histórico ou foto atual.</div>
+<div class="filterbar"><span><label>De</label><select id="fDe"></select></span>
+<span><label>Até</label><select id="fAte"></select></span><button id="fReset">↺ Tudo</button>
+<div class="rangepill"><div>Otimista no período<b class="o" id="rOt">—</b></div>
+<div>Ajustado no período<b class="g" id="rAj">—</b></div><div>Parcelas<b id="rQt">—</b></div></div></div></div>
+<div class="grid cards">
+<div class="card col-8"><h2>Projeção mensal a receber — Otimista vs Ajustado <span class="bdg">🔎 filtrável</span></h2>
+<div class="desc">Otimista = 100% · Ajustado = −inadimplência histórica por tipo de cobrança</div><canvas id="proj"></canvas></div>
+<div class="card col-4"><h2>Acumulado ajustado <span class="bdg">🔎 filtrável</span></h2>
+<div class="desc">Soma acumulada no período selecionado</div><canvas id="acum"></canvas></div>
+<div class="card col-7"><h2>Histórico recebido mensal</h2><div class="desc">Entradas líquidas</div><canvas id="hist"></canvas></div>
+<div class="card col-5"><h2>Inadimplência por tipo de cobrança</h2><div class="desc">% parcelas vencidas não recebidas (taxa usada na projeção)</div><canvas id="inadTipo"></canvas></div>
+<div class="card col-6"><h2>Inadimplência por forma de pagamento</h2><div class="desc">% parcelas vencidas não recebidas</div><canvas id="inadPag"></canvas></div>
+<div class="card col-6"><h2>Assinatura — inadimplência por método</h2><div class="desc">PIX Automático concentra o risco</div><canvas id="assin"></canvas></div>
+<div class="card col-12"><h2>Devedores por quantidade de parcelas em atraso</h2>
+<div class="desc">Barras = clientes · Linha = valor em atraso · quem tem 1-3 parcelas é o mais recuperável</div><canvas id="distParc" style="max-height:300px"></canvas></div>
+<div class="card col-12"><h2>Valor em atraso por tipo de plano</h2>
+<table><thead><tr><th>Tipo de plano</th><th>Vendas</th><th>Devedores</th><th>% inad.</th><th>Valor em atraso</th></tr></thead><tbody id="tblTipo"></tbody></table></div>
+
+</div><div class="foot">Gerado automaticamente do histórico Hotmart · Maré Educação · ref. 23/06/2026</div></div>
+<script>
+const D={"ref": "23/06/2026", "kpi": {"recebido": 6231101, "pagas": 5929, "otim": 1078724, "qfut": 4131, "ajus": 770985, "atraso": 599711, "qatraso": 1943, "taxa": 24.7, "devedores": 538, "alunos": 2920, "pctdev": 18.4}, "mLbl": ["06/26", "07/26", "08/26", "09/26", "10/26", "11/26", "12/26", "01/27", "02/27", "03/27", "04/27", "05/27"], "otim": [27418, 173294, 158640, 137649, 118209, 115331, 105027, 84962, 70718, 38529, 32974, 15971], "ajus": [19549, 121306, 112175, 97339, 84605, 82600, 76207, 61638, 51612, 28164, 24112, 11677], "qtd": [102, 635, 596, 513, 448, 440, 404, 337, 285, 162, 141, 68], "ac": [19549, 140855, 253030, 350369, 434974, 517574, 593781, 655419, 707031, 735195, 759307, 770984], "hLbl": ["07/25", "08/25", "09/25", "10/25", "11/25", "12/25", "01/26", "02/26", "03/26", "04/26", "05/26", "06/26"], "hTot": [471629, 96241, 811566, 508198, 107346, 160431, 87244, 674008, 875464, 127600, 900227, 699342], "itLbl": ["Parcelamento Inteligente", "Assinatura", "Recuperador Inteligente", "Parcelado Hotmart - Link exclusivo", "Parcelado Hotmart - Recuperador", "Apenas à vista", "Parcelamento padrão (até 12×)", "Parcelado SEM acréscimo para seu cliente (o responsável pelos acréscimos é você, Produtor)", "Parcelado Hotmart - Checkout"], "itVal": [78.9, 40.6, 30.7, 27.2, 26.7, 2.9, 0.0, 0.0, 0.0], "ipLbl": ["PIX Automático", "Parcelado Hotmart", "Conta Hotmart (Cartão)", "Cartão de Crédito", "Pix", "Boleto Bancário", "Pagamento Híbrido", "Dois Cartões de Crédito", "PayPal"], "ipVal": [44.7, 27.0, 21.6, 20.3, 18.2, 8.3, 0.0, 0.0, 0.0], "asLbl": ["PIX Automático (186)", "Cartão de Crédito (44)", "Pix (28)", "Boleto Bancário (19)", "PayPal (1)"], "asVal": [44.7, 21.4, 39.7, 4.9, 0.0], "qt": [["Recuperador Inteligente", 342, 183, "53.5%", 245769.05], ["Assinatura", 278, 163, "58.6%", 190985.07], ["Parcelado Hotmart - Recuperador", 237, 81, "34.2%", 68013.13], ["Apenas à vista", 546, 16, "2.9%", 41616.68], ["Parcelado Hotmart - Link exclusivo", 228, 90, "39.5%", 39858.53], ["Parcelamento Inteligente", 17, 14, "82.4%", 13468.25], ["Parcelamento padrão (até 12×)", 1335, 0, "0.0%", 0.0], ["Parcelado SEM acréscimo para seu cliente (o responsável pelos acréscimos é você, Produtor)", 8, 0, "0.0%", 0.0], ["Parcelado Hotmart - Checkout", 1, 0, "0.0%", 0.0]], "top": [], "dLbl": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"], "dCli": [177, 78, 68, 50, 35, 21, 34, 39, 14, 13, 9], "dVal": [81738, 50702, 69639, 67959, 55448, 35712, 63174, 81173, 32979, 34476, 26710]};
+Chart.defaults.color='#94a3b8';Chart.defaults.borderColor='#334155';
+const BRL=v=>'R$ '+Number(v).toLocaleString('pt-BR',{maximumFractionDigits:0});
+const k=D.kpi,mi=v=>(v/1e6).toLocaleString('pt-BR',{maximumFractionDigits:2}),mil=v=>Math.round(v/1000);
+document.getElementById('kpis').innerHTML=`
+<div class="kpi green"><div class="label">Já recebido (líquido)</div><div class="val">R$ ${mi(k.recebido)} mi</div><div class="sub">${k.pagas.toLocaleString('pt-BR')} parcelas pagas</div></div>
+<div class="kpi"><div class="label">A receber — Otimista 12m</div><div class="val">R$ ${mi(k.otim)} mi</div><div class="sub">${k.qfut.toLocaleString('pt-BR')} parcelas futuras</div></div>
+<div class="kpi violet"><div class="label">A receber — Ajustado 12m</div><div class="val">R$ ${mil(k.ajus)} mil</div><div class="sub">−inadimplência histórica</div></div>
+<div class="kpi red"><div class="label">Em atraso confirmado</div><div class="val">R$ ${mil(k.atraso)} mil</div><div class="sub">${k.qatraso.toLocaleString('pt-BR')} parcelas não pagas</div></div>
+<div class="kpi amber"><div class="label">Inadimplência geral</div><div class="val">${k.taxa}%</div><div class="sub">das parcelas vencidas</div></div>
+<div class="kpi red"><div class="label">Clientes devedores</div><div class="val">${k.devedores}</div><div class="sub">de ${k.alunos.toLocaleString('pt-BR')} alunos (${k.pctdev}%)</div></div>`;
+const projC=new Chart(proj,{type:'bar',data:{labels:D.mLbl,datasets:[
+{label:'Otimista (100%)',data:D.otim,backgroundColor:'#38bdf8',borderRadius:5},
+{label:'Ajustado (realista)',data:D.ajus,backgroundColor:'#a78bfa',borderRadius:5}]},
+options:{plugins:{legend:{position:'top'},tooltip:{callbacks:{label:c=>c.dataset.label+': '+BRL(c.raw)}}},scales:{y:{ticks:{callback:v=>'R$ '+(v/1000)+'k'}}}}});
+const acumC=new Chart(document.getElementById('acum'),{type:'line',data:{labels:D.mLbl,datasets:[{label:'Acumulado',data:D.ac.slice(),borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.15)',fill:true,tension:.35,pointRadius:3,spanGaps:false}]},
+options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>BRL(c.raw)}}},scales:{y:{ticks:{callback:v=>'R$ '+(v/1000)+'k'}}}}});
+new Chart(hist,{type:'bar',data:{labels:D.hLbl,datasets:[{label:'Recebido',data:D.hTot,backgroundColor:'#0ea5e9',borderRadius:5}]},
+options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>BRL(c.raw)}}},scales:{y:{ticks:{callback:v=>'R$ '+(v/1000)+'k'}}}}});
+const pal=['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#06b6d4'];
+new Chart(inadTipo,{type:'bar',data:{labels:D.itLbl,datasets:[{data:D.itVal,backgroundColor:D.itLbl.map((_,i)=>pal[i%pal.length]),borderRadius:5}]},
+options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+'%'}}},scales:{x:{ticks:{callback:v=>v+'%'}}}}});
+new Chart(inadPag,{type:'bar',data:{labels:D.ipLbl,datasets:[{data:D.ipVal,backgroundColor:'#fb7185',borderRadius:5}]},
+options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+'%'}}},scales:{x:{ticks:{callback:v=>v+'%'}}}}});
+new Chart(assin,{type:'bar',data:{labels:D.asLbl,datasets:[{label:'% inad.',data:D.asVal,backgroundColor:D.asLbl.map((_,i)=>pal[i%pal.length]),borderRadius:5}]},
+options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+'%'}}},scales:{y:{ticks:{callback:v=>v+'%'}}}}});
+new Chart(distParc,{data:{labels:D.dLbl,datasets:[
+{type:'bar',label:'Clientes',data:D.dCli,backgroundColor:D.dLbl.map((l,i)=>['#22c55e','#4ade80','#86efac','#fbbf24','#f59e0b','#f97316','#fb923c','#ef4444','#dc2626','#b91c1c','#7f1d1d'][Math.min(i,10)]),borderRadius:5,yAxisID:'y'},
+{type:'line',label:'Valor em atraso',data:D.dVal,borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,.15)',fill:true,tension:.35,pointRadius:3,yAxisID:'y1'}]},
+options:{plugins:{legend:{position:'top'},tooltip:{callbacks:{label:c=>c.dataset.type==='line'?'Valor: '+BRL(c.raw):'Clientes: '+c.raw}}},
+scales:{x:{title:{display:true,text:'Qtd. de parcelas em atraso por cliente'}},y:{position:'left',title:{display:true,text:'Clientes'}},y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>'R$ '+(v/1000)+'k'}}}}});
+const TG={'t-hi':v=>v>=25,'t-md':v=>v>=10};
+D.qt.forEach(r=>{let p=parseFloat(r[3]),c=p>=25?'t-hi':p>=10?'t-md':'t-lo';
+tblTipo.insertAdjacentHTML('beforeend',`<tr><td>${r[0]}</td><td class=num>${r[1]}</td><td class=num>${r[2]}</td><td><span class="tag ${c}">${r[3]}</span></td><td class=num>${BRL(r[4])}</td></tr>`)});
+
+try{const fDe=document.getElementById('fDe'),fAte=document.getElementById('fAte');
+D.mLbl.forEach((m,i)=>{fDe.add(new Option(m,i));fAte.add(new Option(m,i))});
+fDe.value=0;fAte.value=D.mLbl.length-1;
+const ap=()=>{let a=+fDe.value,b=+fAte.value;if(a>b){[a,b]=[b,a];fDe.value=a;fAte.value=b}
+const dd=i=>i>=a&&i<=b;
+projC.data.datasets[0].backgroundColor=D.mLbl.map((_,i)=>dd(i)?'#38bdf8':'rgba(56,189,248,.15)');
+projC.data.datasets[1].backgroundColor=D.mLbl.map((_,i)=>dd(i)?'#a78bfa':'rgba(167,139,250,.15)');projC.update();
+let s=0;acumC.data.datasets[0].data=D.ajus.map((v,i)=>dd(i)?(s+=v):null);acumC.update();
+const sl=ar=>ar.reduce((x,v,i)=>x+(dd(i)?v:0),0);
+rOt.textContent=BRL(sl(D.otim));rAj.textContent=BRL(sl(D.ajus));rQt.textContent=sl(D.qtd).toLocaleString('pt-BR')}
+fDe.onchange=ap;fAte.onchange=ap;fReset.onclick=()=>{fDe.value=0;fAte.value=D.mLbl.length-1;ap()};ap();
+}catch(e){console.error('Filtro:',e)}
+</script></body></html>

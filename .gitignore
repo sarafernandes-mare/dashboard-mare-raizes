@@ -1,0 +1,50 @@
+# ⚠️ DADOS SENSÍVEIS — nunca commitar
+
+# Bases brutas da Hotmart (têm dados pessoais)
+sales_history_*.xls
+sales_history_*.xlsx
+historico*.csv
+historico*.xlsx
+venda*.xlsx
+vendas*.xlsx
+*Comiss*.xlsx
+todas*.xlsx
+Planilha_Controle*.xlsx
+
+# Saídas geradas (têm nomes/e-mails de clientes)
+base_mare_parcelas_projecao*.xlsx
+base_mare_v*.xlsx
+inadimplentes_*.xlsx
+cobranca_*.xlsx
+dashboard_mare.html
+dashboard_mare_v*.html
+parcelas_maio_2026.csv
+
+# Versões geradas localmente
+_v2_*.csv
+_v3_*.csv
+_csv_*.csv
+_b64.txt
+_mare_light.xlsx
+
+# Logs e temporários
+_log_dashboard.txt
+~$*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
