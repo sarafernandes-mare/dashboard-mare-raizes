@@ -58,7 +58,8 @@ tr:hover td.sticky-col{background:#0f172a!important}
 <div class="desc">Parceladas = onde a Maré tem risco (Recuperador, Assinatura, Parcelado Hotmart, Parcelamento Inteligente). Vendas à vista pro produtor excluídas — não têm risco. Lançamentos com &lt;50 vendas não aparecem.</div>
 <canvas id="lanc" style="max-height:320px"></canvas></div>
 <div class="card col-12"><h2>📅 Inadimplência por período (só 2026)</h2>
-<div class="desc">Escolha o tipo de contagem, o período e veja mês a mês + acumulado.</div>
+<div class="desc" id="inadDescBase">Escolha o tipo de contagem, o período e veja mês a mês + acumulado.</div>
+<div id="inadExplic" style="background:#0f172a;border-left:3px solid #38bdf8;padding:10px 14px;border-radius:6px;font-size:12px;color:#cbd5e1;margin:10px 0"></div>
 <div style="display:flex;gap:14px;margin-bottom:14px;align-items:center;flex-wrap:wrap">
   <div>
     <span style="font-size:12px;color:#94a3b8;margin-right:6px">👁 Visão:</span>
@@ -147,6 +148,11 @@ function renderInad(){
   const filtrados=dados.slice(-N);
   const rotuloTot=_iVisao==='V'?'Vendas':'Parcelas vencidas';
   const rotuloInad=_iVisao==='V'?'Vendas inadimplentes':'Parcelas em atraso';
+  // Explicacao dinamica que muda com a visao
+  const explic=_iVisao==='V'
+    ? '<b>👁 Por vendas do mês:</b> conta vendas <b>fechadas naquele mês</b> em 2026 que viraram inadimplentes. O valor em atraso é a soma das parcelas atrasadas dessas vendas específicas, mesmo que as parcelas venham a atrasar depois de 2026.'
+    : '<b>👁 Por parcelas vencidas no mês:</b> conta parcelas cujo <b>vencimento cai naquele mês</b> em 2026 e não foram pagas. Aqui inclui parcelas de vendas antigas (2025) que atrasaram em 2026. Por isso o valor tende a ser MAIOR que a visão por vendas.';
+  document.getElementById('inadExplic').innerHTML=explic;
   // Resumo (acumulado)
   const totAcum=filtrados.reduce((a,x)=>a+x.total,0);
   const inadAcum=filtrados.reduce((a,x)=>a+x.inad,0);
